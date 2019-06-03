@@ -32,7 +32,7 @@ THREE.BasisLoader.prototype.detectSupport = function ( renderer ) {
 	if ( etcSupported ) {
 
 		this.basisFormat = THREE.BasisLoader.BASIS_FORMAT.cTFETC1;
-		this.threeFormat = THREE.RGB_PVRTC_4BPPV1_Format;
+		this.threeFormat = THREE.RGB_ETC1_Format;
 
 	} else if ( dxtSupported ) {
 
@@ -42,7 +42,7 @@ THREE.BasisLoader.prototype.detectSupport = function ( renderer ) {
 	} else if ( pvrtcSupported ) {
 
 		this.basisFormat = THREE.BasisLoader.BASIS_FORMAT.cTFPVRTC1_4_OPAQUE_ONLY;
-		this.threeFormat = THREE.RGB_ETC1_Format;
+		this.threeFormat = THREE.RGB_PVRTC_4BPPV1_Format;
 
 	} else {
 
