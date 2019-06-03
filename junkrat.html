@@ -32,17 +32,9 @@
 
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/105/three.js"></script>
 
-		<script>
-		var BasisResolve;
-		var BasisReady = new Promise(function (resolve) { BasisResolve = resolve; });
-		var BasisModule = {};
-		BasisModule.onRuntimeInitialized = function() { BasisResolve(); };
-		</script>
-
-		<script src="basis/basis_transcoder.js"></script>
 		<script src="MeshoptDecoder.js"></script>
 		<script src="GLTFLoader.js"></script>
-		<script src="BasisLoader.js"></script>
+		<script src="BasisTextureLoader.js"></script>
 
 		<script>
 			var container;
@@ -85,32 +77,29 @@
 				renderer.setSize(window.innerWidth, window.innerHeight);
 				container.appendChild(renderer.domElement);
 
-				var basisLoader = new THREE.BasisLoader();
+				var basisLoader = new THREE.BasisTextureLoader();
+				basisLoader.setTranscoderPath ('basis/');
 				basisLoader.detectSupport( renderer );
 
 				THREE.Loader.Handlers.add( /\.basis$/i, basisLoader );
 
-				BasisReady.then(function () {
+				var gltfLoader = new THREE.GLTFLoader()
+				gltfLoader.setMeshoptDecoder(MeshoptDecoder)
+				gltfLoader.load('junkrat/scene.gltf', function (gltf) {
+					var bbox = new THREE.Box3().setFromObject(gltf.scene);
+					var scale = 2 / (bbox.max.y - bbox.min.y);
 
-					var gltfLoader = new THREE.GLTFLoader()
-					gltfLoader.setMeshoptDecoder(MeshoptDecoder)
-					gltfLoader.load('junkrat/scene.gltf', function (gltf) {
-						var bbox = new THREE.Box3().setFromObject(gltf.scene);
-						var scale = 2 / (bbox.max.y - bbox.min.y);
+					gltf.scene.scale.set(scale, scale, scale);
+					gltf.scene.position.set(0, 0, 0);
 
-						gltf.scene.scale.set(scale, scale, scale);
-						gltf.scene.position.set(0, 0, 0);
+					scene.add(gltf.scene);
 
-						scene.add(gltf.scene);
+					mixer = new THREE.AnimationMixer(gltf.scene);
 
-						mixer = new THREE.AnimationMixer(gltf.scene);
-
-						if (gltf.animations.length) {
-							mixer.clipAction(gltf.animations[gltf.animations.length - 1]).play();
-						}
-					}, onProgress, onError);
-
-				});
+					if (gltf.animations.length) {
+						mixer.clipAction(gltf.animations[gltf.animations.length - 1]).play();
+					}
+				}, onProgress, onError);
 
 				window.addEventListener('resize', onWindowResize, false);
 
