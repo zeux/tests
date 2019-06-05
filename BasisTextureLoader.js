@@ -383,7 +383,17 @@ THREE.BasisTextureLoader.BasisWorker = function () {
 
 			var mipWidth = basisFile.getImageWidth( 0, mip );
 			var mipHeight = basisFile.getImageHeight( 0, mip );
-			var dst = new Uint8Array( basisFile.getImageTranscodedSizeInBytes( 0, mip, config.format ) );
+			var mipSize = basisFile.getImageTranscodedSizeInBytes( 0, mip, config.format );
+
+			if ( config.pvrtcSupported ) {
+
+				// Basis incorrectly computes mip sizes for PVRTC, let's fix them up using the spec:
+				// https://www.khronos.org/registry/OpenGL/extensions/IMG/IMG_texture_compression_pvrtc.txt
+				mipSize = Math.floor((Math.max(mipWidth, 8) * Math.max(mipHeight, 8) * 4 + 7) / 8);
+
+			}
+
+			var dst = new Uint8Array( mipSize );
 
 			var status = basisFile.transcodeImage(
 				dst,
