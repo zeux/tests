@@ -204,7 +204,7 @@ THREE.GLTFLoader = ( function () {
 							extensions[ EXTENSIONS.KHR_TEXTURE_TRANSFORM ] = new GLTFTextureTransformExtension( json );
 							break;
 
-						case EXTENSIONS.KHR_MESHOPT_COMPRESSION:
+						case EXTENSIONS.MESHOPT_COMPRESSION:
 							extensions[ extensionName ] = new GLTFMeshoptCompressionExtension( json, this.meshoptDecoder );
 							break;
 
@@ -284,7 +284,7 @@ THREE.GLTFLoader = ( function () {
 		KHR_MATERIALS_UNLIT: 'KHR_materials_unlit',
 		KHR_TEXTURE_TRANSFORM: 'KHR_texture_transform',
 		MSFT_TEXTURE_DDS: 'MSFT_texture_dds',
-		KHR_MESHOPT_COMPRESSION: 'KHR_meshopt_compression',
+		MESHOPT_COMPRESSION: 'MESHOPT_compression',
 	};
 
 	/**
@@ -1016,7 +1016,7 @@ THREE.GLTFLoader = ( function () {
 
 		}
 
-		this.name = EXTENSIONS.KHR_MESHOPT_COMPRESSION;
+		this.name = EXTENSIONS.MESHOPT_COMPRESSION;
 		this.json = json;
 		this.meshoptDecoder = meshoptDecoder;
 
@@ -1028,7 +1028,7 @@ THREE.GLTFLoader = ( function () {
 
 		return decoder.ready.then( function () {
 
-			var extensionDef = bufferViewDef.extensions[ EXTENSIONS.KHR_MESHOPT_COMPRESSION ];
+			var extensionDef = bufferViewDef.extensions[ EXTENSIONS.MESHOPT_COMPRESSION ];
 
 			var byteOffset = bufferViewDef.byteOffset || 0;
 			var byteLength = bufferViewDef.byteLength || 0;
@@ -1037,18 +1037,16 @@ THREE.GLTFLoader = ( function () {
 			var stride = extensionDef.byteStride;
 
 			var result = new ArrayBuffer(count * stride);
-			var source = buffer.slice(byteOffset, byteOffset + byteLength);
+			var source = new Uint8Array(buffer, byteOffset, byteLength);
 
-			var sourceArray = new Uint8Array(source);
-
-			switch ( sourceArray[0] >> 4 ) {
+			switch ( source[0] >> 4 ) {
 
 				case 0xA:
-					decoder.decodeVertexBuffer(new Uint8Array(result), count, stride, sourceArray);
+					decoder.decodeVertexBuffer(new Uint8Array(result), count, stride, source);
 					break;
 
 				case 0xE:
-					decoder.decodeIndexBuffer(new Uint8Array(result), count, stride, sourceArray);
+					decoder.decodeIndexBuffer(new Uint8Array(result), count, stride, source);
 					break;
 
 				default:
@@ -1932,9 +1930,9 @@ THREE.GLTFLoader = ( function () {
 
 		var bufferViewDef = this.json.bufferViews[ bufferViewIndex ];
 
-		if ( bufferViewDef.extensions && bufferViewDef.extensions[ EXTENSIONS.KHR_MESHOPT_COMPRESSION ] ) {
+		if ( bufferViewDef.extensions && bufferViewDef.extensions[ EXTENSIONS.MESHOPT_COMPRESSION ] ) {
 
-			var extension = this.extensions[ EXTENSIONS.KHR_MESHOPT_COMPRESSION ];
+			var extension = this.extensions[ EXTENSIONS.MESHOPT_COMPRESSION ];
 
 			return this.getDependency( 'buffer', bufferViewDef.buffer ).then( function ( buffer ) {
 

@@ -30,7 +30,7 @@
 		<a href="https://github.com/zeux/meshoptimizer" target="_blank" rel="noopener">meshoptimizer</a> - gltfpack <a href="https://sketchfab.com/3d-models/junkrat-7deb2dd552df4bf4bb65005018176647">junkrat</a> by Claudia Luehl
 		</div>
 
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/105/three.min.js"></script>
+		<script src="three.min.js"></script>
 
 		<script src="MeshoptDecoder.js"></script>
 		<script src="GLTFLoader.js"></script>
@@ -85,12 +85,12 @@
 
 				var gltfLoader = new THREE.GLTFLoader()
 				gltfLoader.setMeshoptDecoder(MeshoptDecoder)
-				gltfLoader.load('junkrat/scene-q10.gltf', function (gltf) {
+				gltfLoader.load('alien/scene.gltf', function (gltf) {
 					var bbox = new THREE.Box3().setFromObject(gltf.scene);
 					var scale = 2 / (bbox.max.y - bbox.min.y);
 
 					gltf.scene.scale.set(scale, scale, scale);
-					gltf.scene.position.set(0, 0, 0);
+					gltf.scene.position.set(0, 1.3, 0);
 
 					scene.add(gltf.scene);
 
