@@ -81,10 +81,11 @@
 				basisLoader.setTranscoderPath ('basis/');
 				basisLoader.detectSupport( renderer );
 
-				THREE.Loader.Handlers.add( /\.basis$/i, basisLoader );
+				var loadingManager = new THREE.LoadingManager();
+				loadingManager.addHandler(/\.basis$/i, basisLoader);
 
-				var gltfLoader = new THREE.GLTFLoader()
-				gltfLoader.setMeshoptDecoder(MeshoptDecoder)
+				var gltfLoader = new THREE.GLTFLoader(loadingManager);
+				gltfLoader.setMeshoptDecoder(MeshoptDecoder);
 				gltfLoader.load('alien/scene.gltf', function (gltf) {
 					var bbox = new THREE.Box3().setFromObject(gltf.scene);
 					var scale = 2 / (bbox.max.y - bbox.min.y);
