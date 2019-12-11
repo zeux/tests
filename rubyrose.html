@@ -86,6 +86,7 @@
 
 				var gltfLoader = new THREE.GLTFLoader(loadingManager);
 				gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+				gltfLoader.setBasisLoader(basisLoader);
 				gltfLoader.load('rubyrose/rubyrose.glb', function (gltf) {
 					var bbox = new THREE.Box3().setFromObject(gltf.scene);
 					var scale = 2 / (bbox.max.y - bbox.min.y);
