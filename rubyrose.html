@@ -81,6 +81,8 @@
 				basisLoader.setTranscoderPath ('basis/');
 				basisLoader.detectSupport( renderer );
 
+				basisLoader._initTranscoder(); // preloads transcoder binaries
+
 				var loadingManager = new THREE.LoadingManager();
 				loadingManager.addHandler(/\.basis$/i, basisLoader);
 

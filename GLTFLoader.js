@@ -1961,6 +1961,22 @@ THREE.GLTFLoader = ( function () {
 
 		if ( source.bufferView !== undefined ) {
 
+			// We're going to short-cut the URL.createObjectURL nonsense for embedded Basis images
+
+			if ( options.basisLoader && source.mimeType == "image/basis" ) {
+
+				return parser.getDependency( 'bufferView', source.bufferView ).then( function ( bufferView ) {
+
+					return new Promise( function ( resolve, reject ) {
+
+						options.basisLoader._createTexture( bufferView ).then( resolve ).catch( reject );
+
+					} );
+
+				} );
+
+			}
+
 			// Load binary image data from bufferView, if provided.
 
 			sourceURI = parser.getDependency( 'bufferView', source.bufferView ).then( function ( bufferView ) {
