@@ -39,7 +39,7 @@
 		<script>
 			var container;
 
-			var camera, scene, renderer, mixer, clock;
+			var camera, scene, renderer, mixers, clock;
 
 			var windowHalfX = window.innerWidth / 2;
 			var windowHalfY = window.innerHeight / 2;
@@ -77,32 +77,42 @@
 				renderer.setSize(window.innerWidth, window.innerHeight);
 				container.appendChild(renderer.domElement);
 
+				mixers = [];
+
 				var basisLoader = new THREE.BasisTextureLoader();
 				basisLoader.setTranscoderPath ('basis/');
 				basisLoader.detectSupport( renderer );
 
 				basisLoader._initTranscoder(); // preloads transcoder binaries
 
-				var loadingManager = new THREE.LoadingManager();
-				loadingManager.addHandler(/\.basis$/i, basisLoader);
-
-				var gltfLoader = new THREE.GLTFLoader(loadingManager);
+				var gltfLoader = new THREE.GLTFLoader();
 				gltfLoader.setMeshoptDecoder(MeshoptDecoder);
 				gltfLoader.setBasisLoader(basisLoader);
-				gltfLoader.load('rubyrose/scene.glb', function (gltf) {
+
+				function addScene(gltf, offset) {
 					var bbox = new THREE.Box3().setFromObject(gltf.scene);
 					var scale = 2 / (bbox.max.y - bbox.min.y);
 
 					gltf.scene.scale.set(scale, scale, scale);
-					gltf.scene.position.set(0, 0, 0);
+					gltf.scene.position.set(offset, 0, 0);
 
 					scene.add(gltf.scene);
 
-					mixer = new THREE.AnimationMixer(gltf.scene);
-
 					if (gltf.animations.length) {
+						var mixer = new THREE.AnimationMixer(gltf.scene);
+
 						mixer.clipAction(gltf.animations[gltf.animations.length - 1]).play();
+
+						mixers.push(mixer);
 					}
+				}
+
+				gltfLoader.load('rubyrose/scene.glb', function (gltf) {
+					addScene(gltf, -1);
+				}, onProgress, onError);
+
+				gltfLoader.load('rubyrose/scene.gltf', function (gltf) {
+					addScene(gltf, +1);
 				}, onProgress, onError);
 
 				window.addEventListener('resize', onWindowResize, false);
@@ -123,8 +133,10 @@
 
 			function animate()
 			{
-				if (mixer) {
-					mixer.update(clock.getDelta());
+				var dt = clock.getDelta();
+
+				for (var i = 0; i < mixers.length; ++i) {
+					mixers[i].update(dt);
 				}
 
 				requestAnimationFrame(animate);
