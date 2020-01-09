@@ -112,6 +112,68 @@
 
 			}
 
+			function updateTransforms(matrixArray, amount, offset, scale, time) {
+
+				var i = 0;
+
+				for ( var x = 0; x < amount; x ++ ) {
+
+					for ( var y = 0; y < amount; y ++ ) {
+
+						for ( var z = 0; z < amount; z ++ ) {
+
+							var tx = offset - x;
+							var ty = offset - y;
+							var tz = offset - z;
+
+							var rx = 0;
+							var ry = ( Math.sin( x / 4 + time ) + Math.sin( y / 4 + time ) + Math.sin( z / 4 + time ) );
+							var rz = ry * 2;
+
+							var ch = Math.cos(rx);
+							var sh = Math.sin(rx);
+							var ca = Math.cos(ry);
+							var sa = Math.sin(ry);
+							var cb = Math.cos(rz);
+							var sb = Math.sin(rz);
+
+							var m00 = ch * ca;
+							var m01 = sh*sb - ch*sa*cb;
+							var m02 = ch*sa*sb + sh*cb;
+							var m10 = sa;
+							var m11 = ca*cb;
+							var m12 = -ca*sb;
+							var m20 = -sh*ca;
+							var m21 = sh*sa*cb + ch*sb;
+							var m22 = -sh*sa*sb + ch*cb;
+
+							matrixArray[i * 16 + 0] = m00 * scale;
+							matrixArray[i * 16 + 1] = m01 * scale;
+							matrixArray[i * 16 + 2] = m02 * scale;
+							matrixArray[i * 16 + 3] = 0;
+							matrixArray[i * 16 + 4] = m10 * scale;
+							matrixArray[i * 16 + 5] = m11 * scale;
+							matrixArray[i * 16 + 6] = m12 * scale;
+							matrixArray[i * 16 + 7] = 0;
+							matrixArray[i * 16 + 8] = m20 * scale;
+							matrixArray[i * 16 + 9] = m21 * scale;
+							matrixArray[i * 16 + 10] = m22 * scale;
+							matrixArray[i * 16 + 11] = 0;
+							matrixArray[i * 16 + 12] = tx;
+							matrixArray[i * 16 + 13] = ty;
+							matrixArray[i * 16 + 14] = tz;
+							matrixArray[i * 16 + 15] = 1;
+
+							i++;
+
+						}
+
+					}
+
+				}
+
+			}
+
 			function render() {
 
 				if ( meshgltf ) {
@@ -146,63 +208,8 @@
 
 					if ( config.fastmath ) {
 
-						var matrixArray = mesh.instanceMatrix.array;
+						updateTransforms(mesh.instanceMatrix.array, amount, offset, scale, time);
 
-						for ( var x = 0; x < amount; x ++ ) {
-
-							for ( var y = 0; y < amount; y ++ ) {
-
-								for ( var z = 0; z < amount; z ++ ) {
-
-									var tx = offset - x;
-									var ty = offset - y;
-									var tz = offset - z;
-
-									var rx = 0;
-									var ry = ( Math.sin( x / 4 + time ) + Math.sin( y / 4 + time ) + Math.sin( z / 4 + time ) );
-									var rz = ry * 2;
-
-									var ch = Math.cos(rx);
-									var sh = Math.sin(rx);
-									var ca = Math.cos(ry);
-									var sa = Math.sin(ry);
-									var cb = Math.cos(rz);
-									var sb = Math.sin(rz);
-
-									var m00 = ch * ca;
-									var m01 = sh*sb - ch*sa*cb;
-									var m02 = ch*sa*sb + sh*cb;
-									var m10 = sa;
-									var m11 = ca*cb;
-									var m12 = -ca*sb;
-									var m20 = -sh*ca;
-									var m21 = sh*sa*cb + ch*sb;
-									var m22 = -sh*sa*sb + ch*cb;
-
-									matrixArray[i * 16 + 0] = m00 * scale;
-									matrixArray[i * 16 + 1] = m01 * scale;
-									matrixArray[i * 16 + 2] = m02 * scale;
-									matrixArray[i * 16 + 3] = 0;
-									matrixArray[i * 16 + 4] = m10 * scale;
-									matrixArray[i * 16 + 5] = m11 * scale;
-									matrixArray[i * 16 + 6] = m12 * scale;
-									matrixArray[i * 16 + 7] = 0;
-									matrixArray[i * 16 + 8] = m20 * scale;
-									matrixArray[i * 16 + 9] = m21 * scale;
-									matrixArray[i * 16 + 10] = m22 * scale;
-									matrixArray[i * 16 + 11] = 0;
-									matrixArray[i * 16 + 12] = tx;
-									matrixArray[i * 16 + 13] = ty;
-									matrixArray[i * 16 + 14] = tz;
-									matrixArray[i * 16 + 15] = 1;
-
-									i++;
-
-								}
-
-							}
-
-						}
 
 					} else {
 
