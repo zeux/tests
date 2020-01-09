@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - instancing - dynamic</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	</head>
+	<body>
+
+		<script type="module">
+
+			import * as THREE from 'https://threejs.org/build/three.module.js';
+
+			import Stats from 'https://threejs.org/examples/jsm/libs/stats.module.js';
+			import { GUI } from 'https://threejs.org/examples/jsm/libs/dat.gui.module.js';
+			import { GLTFLoader } from 'https://threejs.org/examples/jsm/loaders/GLTFLoader.js';
+
+			var camera, scene, renderer, stats;
+
+			var meshgltf, meshglb;
+			var amount = parseInt( window.location.search.substr( 1 ) ) || 40;
+			var count = Math.pow( amount, 3 );
+			var dummy = new THREE.Object3D();
+			var scenescalegltf = 1.0;
+			var scenescaleglb = 1.0;
+
+			var config = { count: count, gltfpack: false };
+
+			init();
+			animate();
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
+				camera.position.set( amount * 0.9, amount * 0.9, amount * 0.9 );
+				camera.lookAt( 0, 0, 0 );
+
+				scene = new THREE.Scene();
+
+				var loader = new GLTFLoader();
+				loader.load( 'instancing/suzanne.gltf', function ( gltf ) {
+
+					var geometry = gltf.scene.children[0].geometry;
+
+					scenescalegltf = gltf.scene.children[0].scale.x;
+
+					var material = new THREE.MeshNormalMaterial();
+					// check overdraw
+					// var material = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.1, transparent: true } );
+
+					meshgltf = new THREE.InstancedMesh( geometry, material, count );
+					meshgltf.instanceMatrix.setUsage( THREE.DynamicDrawUsage ); // will be updated every frame
+					scene.add( meshgltf );
+
+				} );
+
+				loader.load( 'instancing/suzanne.glb', function ( gltf ) {
+
+					var geometry = gltf.scene.children[0].geometry;
+
+					scenescaleglb = gltf.scene.children[0].scale.x;
+
+					var material = new THREE.MeshNormalMaterial();
+					// check overdraw
+					// var material = new THREE.MeshBasicMaterial( { color: 0xff0000, opacity: 0.1, transparent: true } );
+
+					meshglb = new THREE.InstancedMesh( geometry, material, count );
+					meshglb.instanceMatrix.setUsage( THREE.DynamicDrawUsage ); // will be updated every frame
+					scene.add( meshglb );
+
+				} );
+
+				var gui = new GUI();
+				gui.add( config, 'count', 0, count );
+				gui.add( config, 'gltfpack');
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				//
+
+				stats = new Stats();
+				document.body.appendChild( stats.dom );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				render();
+
+				stats.update();
+
+			}
+
+			function render() {
+
+				if ( meshgltf ) {
+
+					meshgltf.visible = false;
+
+				}
+
+				if ( meshglb ) {
+
+					meshglb.visible = false;
+
+				}
+
+				if ( meshgltf && meshglb ) {
+
+					var mesh = config.gltfpack ? meshglb : meshgltf;
+					var scenescale = config.gltfpack ? scenescaleglb : scenescalegltf;
+
+					mesh.visible = true;
+					mesh.count = config.count;
+
+					var time = Date.now() * 0.001;
+
+					mesh.rotation.x = Math.sin( time / 4 );
+					mesh.rotation.y = Math.sin( time / 2 );
+
+					var i = 0;
+					var offset = ( amount - 1 ) / 2;
+
+					var scale = 0.5 * scenescale;
+
+					dummy.scale.x = scale;
+					dummy.scale.y = scale;
+					dummy.scale.z = scale;
+
+					for ( var x = 0; x < amount; x ++ ) {
+
+						for ( var y = 0; y < amount; y ++ ) {
+
+							for ( var z = 0; z < amount; z ++ ) {
+
+								dummy.position.set( offset - x, offset - y, offset - z );
+								dummy.rotation.y = ( Math.sin( x / 4 + time ) + Math.sin( y / 4 + time ) + Math.sin( z / 4 + time ) );
+								dummy.rotation.z = dummy.rotation.y * 2;
+
+								dummy.updateMatrix();
+
+								mesh.setMatrixAt( i ++, dummy.matrix );
+
+							}
+
+						}
+
+					}
+
+					mesh.instanceMatrix.needsUpdate = true;
+
+				}
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+</html>
