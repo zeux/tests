@@ -24,7 +24,7 @@
 			var scenescalegltf = 1.0;
 			var scenescaleglb = 1.0;
 
-			var config = { count: count, gltfpack: false, fastmath: true };
+			var config = { count: count, gltfpack: false, fastmath: true, freeze: false };
 
 			init();
 			animate();
@@ -74,6 +74,7 @@
 				gui.add( config, 'count', 0, count );
 				gui.add( config, 'gltfpack');
 				gui.add( config, 'fastmath');
+				gui.add( config, 'freeze');
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
@@ -198,15 +199,21 @@
 
 					var time = Date.now() * 0.001;
 
-					mesh.rotation.x = Math.sin( time / 4 );
-					mesh.rotation.y = Math.sin( time / 2 );
+					if ( !config.freeze ) {
+
+						mesh.rotation.x = Math.sin( time / 4 );
+						mesh.rotation.y = Math.sin( time / 2 );
+						
+					}
 
 					var i = 0;
 					var offset = ( amount - 1 ) / 2;
 
 					var scale = 0.5 * scenescale;
 
-					if ( config.fastmath ) {
+					if ( config.freeze ) { 
+
+					} else if ( config.fastmath ) {
 
 						updateTransforms(mesh.instanceMatrix.array, amount, offset, scale, time);
 
